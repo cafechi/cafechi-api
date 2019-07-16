@@ -3,14 +3,15 @@ from rest_framework import serializers
 from api import models
 
 
-class TrackSerializer(serializers.ModelSerializer):
+class TrackRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Track
-        fields = ['id', 'title', 'resource_id']
+        fields = ['id', 'title', 'resource_id', 'file']
+        read_only_fields = ('resource_id',)
 
 
 class PlMembership(serializers.ModelSerializer):
-    track = TrackSerializer()
+    track = TrackRetrieveSerializer()
 
     class Meta:
         model = models.PlaylistMembership
@@ -33,7 +34,7 @@ class ReceiverSerializerCreate(serializers.ModelSerializer):
 
 
 class ReceiverSerializerRetrieve(serializers.ModelSerializer):
-    track = TrackSerializer()
+    track = TrackRetrieveSerializer()
 
     class Meta:
         model = models.Receiver

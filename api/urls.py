@@ -1,9 +1,10 @@
 from django.contrib import admin
 from django.urls import path, include
 
-from api.views import PlaylistList, PlaylistAddTrack, PlaylistDetail, ReceiverStatus, ReceiverCreate
+from api.views import PlaylistList, PlaylistAddTrack, PlaylistDetail, ReceiverStatus, ReceiverCreate, TrackList
 
 urlpatterns = [
+    path('track/', TrackList.as_view()),
     path('playlist/', PlaylistList.as_view()),
     path('playlist/<int:pk>/', PlaylistDetail.as_view()),
     path('playlist/<int:pk>/add/<int:track_id>/', PlaylistAddTrack.as_view()),

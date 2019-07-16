@@ -10,6 +10,7 @@ class PlaylistMembership(models.Model):
 class Track(models.Model):
     title = models.CharField(max_length=255)
     resource_id = models.CharField(max_length=255)
+    file = models.FileField()
 
 
 class Playlist(models.Model):
