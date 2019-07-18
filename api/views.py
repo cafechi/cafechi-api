@@ -1,13 +1,13 @@
-from rest_framework import status
+from rest_framework import generics
+from rest_framework import status, views
 from rest_framework.response import Response
-from rest_framework.views import APIView
 
 from api import models
-from api.serializers import PlaylistSerializer, ReceiverSerializerCreate, ReceiverSerializerRetrieve, \
-    ReceiverSerializerUpdate, TrackRetrieveSerializer
+from api.serializers import PlaylistSerializer, ReceiverSerializerCreate, ReceiverSerializerUpdate, \
+    TrackRetrieveSerializer, ReceiverSerializerRetrieve
 
 
-class TrackList(APIView):
+class TrackList(generics.GenericAPIView):
 
     def get(self, request):
         tracks = models.Track.objects.all()
@@ -21,11 +21,11 @@ class TrackList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class TrackDetail(APIView):
+class TrackDetail(generics.GenericAPIView):
     pass
 
 
-class PlaylistList(APIView):
+class PlaylistList(generics.GenericAPIView):
 
     def get(self, request, **kwargs):
         pls = models.Playlist.objects.all()
@@ -33,7 +33,7 @@ class PlaylistList(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class PlaylistDetail(APIView):
+class PlaylistDetail(generics.GenericAPIView):
 
     def get(self, request, pk):
         pl = models.Playlist.objects.get(pk=pk)
@@ -41,7 +41,7 @@ class PlaylistDetail(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class PlaylistAddTrack(APIView):
+class PlaylistAddTrack(generics.GenericAPIView):
 
     def post(self, request, pk, track_id, **kwargs):
         existing_mem = models.PlaylistMembership.objects \
@@ -56,25 +56,32 @@ class PlaylistAddTrack(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class ReceiverCreate(APIView):
-
-    def post(self, request):
-        serializer = ReceiverSerializerCreate(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            serializer.create(serializer.validated_data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+class ReceiverCreate(generics.CreateAPIView):
+    queryset = models.Receiver.objects.all()
+    serializer_class = ReceiverSerializerCreate
 
 
-class ReceiverStatus(APIView):
+class ReceiverStatusUpdate(views.APIView):
+    queryset = models.Receiver.objects.all()
+    serializer_class = ReceiverSerializerUpdate
 
     def get(self, request, pk):
-        receiver = models.Receiver.objects.get(pk=pk)
-        serializer = ReceiverSerializerRetrieve(receiver)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        instance = self.queryset.get(pk=pk)
+        if instance:
+            ser = ReceiverSerializerRetrieve(instance)
+            return Response(ser.data, status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, pk):
-        receiver = models.Receiver.objects.get(pk=pk)
-        serializer = ReceiverSerializerUpdate(receiver, data=request.data)
-        if serializer.is_valid(raise_exception=True):
+        instance = self.queryset.get(pk=pk)
+        if instance:
+            serializer = ReceiverSerializerUpdate(instance, data=request.data)
+            serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+
+class ReceiverStatusRetrieve(generics.RetrieveAPIView):
+    queryset = models.Receiver.objects.all()
+    serializer_class = ReceiverSerializerRetrieve

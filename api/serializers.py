@@ -6,28 +6,19 @@ from api import models
 class TrackRetrieveSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Track
-        fields = ['id', 'title', 'resource_id', 'file']
-        read_only_fields = ('resource_id',)
-
-
-class PlMembership(serializers.ModelSerializer):
-    track = TrackRetrieveSerializer()
-
-    class Meta:
-        model = models.PlaylistMembership
-        fields = ['order', 'playlist', 'track']
+        fields = ['id', 'title', 'resource_id', 'file', 'playlists']
+        read_only_fields = ('resource_id', 'playlists')
 
 
 class PlaylistSerializer(serializers.ModelSerializer):
-    members = PlMembership(many=True)
+    tracks = TrackRetrieveSerializer(many=True)
 
     class Meta:
         model = models.Playlist
-        fields = ['id', 'title', 'members']
+        fields = ['id', 'title', 'tracks']
 
 
 class ReceiverSerializerCreate(serializers.ModelSerializer):
-
     class Meta:
         model = models.Receiver
         fields = ['id', 'status']
@@ -39,11 +30,15 @@ class ReceiverSerializerRetrieve(serializers.ModelSerializer):
     class Meta:
         model = models.Receiver
         fields = ['id', 'status', 'track']
+        read_only_fields = ('status', 'track')
 
 
 class ReceiverSerializerUpdate(serializers.ModelSerializer):
     track = serializers.PrimaryKeyRelatedField(queryset=models.Track.objects.all())
 
+    # track = TrackRetrieveSerializer()
+
     class Meta:
         model = models.Receiver
         fields = ['id', 'status', 'track']
+        # read_only_fields = ('track',)
